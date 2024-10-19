@@ -29,6 +29,7 @@ dependencies {
     implementation(kotlin("reflect"))
     paperweight.paperDevBundle(libs.versions.paper)
     compileOnly("dev.jorel:commandapi-bukkit-core:9.5.0")
+    implementation("com.github.stefvanschie.inventoryframework:IF:0.10.17")
 }
 
 extra.apply {
