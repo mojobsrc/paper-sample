@@ -1,6 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import io.papermc.paperweight.tasks.RemapJar
-import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import java.util.*
 
@@ -51,6 +49,8 @@ extra.apply {
 
         if (group == "org.jetbrains.kotlin" && version == null) {
             version = getKotlinPluginVersion()
+        } else if (group == "io.github.monun.tap" && name.endsWith("-api")) {
+            name = name.removeSuffix("api") + "core"
         }
 
         requireNotNull(version) { "version is null" }
@@ -61,31 +61,50 @@ extra.apply {
     }
 }
 
+
 tasks.assemble {
     dependsOn(tasks.reobfJar)
 }
 
-tasks.reobfJar {
-    outputs.upToDateWhen { false }
-    doLast {
-        // 플러그인 폴더 및 업데이트 폴더 경로 설정
-        val plugins = file("Y:\\minecaft\\plugins")
-        val update = plugins.resolve("update")
+tasks {
+    processResources {
+        filesMatching("*.yml") {
+            expand(project.properties)
+            expand(extra.properties)
+        }
+    }
+    fun registerJar(name: String) {
+        val taskName = name + "Jar"
 
-        // 빌드된 JAR 파일
-        val builtJar = layout.buildDirectory.file("libs/${rootProject.name}-${project.version}.jar").get().asFile
+        register<ShadowJar>(taskName) {
+            archiveClassifier.set(name)
 
-        // 복사 작업
-        copy {
-            from(builtJar)
-            if (plugins.resolve(builtJar.name).exists()) {
-                into(update)  // update 폴더로 복사
-            } else {
-                into(plugins)  // plugins 폴더로 복사
+            from(sourceSets["main"].output)
+
+            configurations = listOf(
+                project.configurations.runtimeClasspath.get()
+            )
+            rename("bundle-plugin.yml", "plugin.yml")
+
+            doLast {
+                // 플러그인 폴더 및 업데이트 폴더 경로 설정
+                val plugins = file("G:\\minecaft\\plugins")
+                val update = plugins.resolve("update")
+
+                // 복사 작업
+                copy {
+                    from(archiveFile)
+
+                    if (plugins.resolve(archiveFileName.get()).exists())
+                        into(update)
+                    else
+                        into(plugins)
+                }
+
+                // 업데이트 폴더의 UPDATE 파일 삭제 예약
+                update.resolve("UPDATE").deleteOnExit()
             }
         }
-
-        // 업데이트 폴더의 UPDATE 파일 삭제 예약
-        update.resolve("UPDATE").deleteOnExit()
     }
+    registerJar("shading")
 }
