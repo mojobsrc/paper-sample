@@ -61,11 +61,6 @@ extra.apply {
     }
 }
 
-
-tasks.assemble {
-    dependsOn(tasks.reobfJar)
-}
-
 tasks {
     processResources {
         filesMatching("*.yml") {
@@ -73,18 +68,24 @@ tasks {
             expand(extra.properties)
         }
     }
-    fun registerJar(name: String) {
+    fun registerJar(name: String, bundle: Boolean) {
         val taskName = name + "Jar"
 
         register<ShadowJar>(taskName) {
-            archiveClassifier.set(name)
+            outputs.upToDateWhen { false }
 
             from(sourceSets["main"].output)
 
-            configurations = listOf(
-                project.configurations.runtimeClasspath.get()
-            )
-            rename("bundle-plugin.yml", "plugin.yml")
+            if (bundle) {
+                configurations = listOf(
+                    project.configurations.runtimeClasspath.get()
+                )
+                exclude("clip-plugin.yml")
+                rename("bundle-plugin.yml", "plugin.yml")
+            } else {
+                exclude("bundle-plugin.yml")
+                rename("clip-plugin.yml", "plugin.yml")
+            }
 
             doLast {
                 // 플러그인 폴더 및 업데이트 폴더 경로 설정
@@ -106,5 +107,6 @@ tasks {
             }
         }
     }
-    registerJar("shading")
+    registerJar("clip", false)
+    registerJar("bundle", true)
 }
