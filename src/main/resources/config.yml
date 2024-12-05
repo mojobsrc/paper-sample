@@ -1,0 +1,4 @@
+shop-sell: <shift:-91><glyph:shop_tooltip><shift:1><glyph:shop_sell>
+shop-buy: <shift:-91><glyph:shop_tooltip><shift:1><glyph:shop_buy>
+cycle: 0
+change: false

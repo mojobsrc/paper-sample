@@ -20,6 +20,8 @@ repositories {
     mavenLocal()
     gradlePluginPortal()
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.oraxen.com/releases")
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -27,6 +29,8 @@ dependencies {
     implementation(kotlin("reflect"))
     paperweight.paperDevBundle(libs.versions.paper)
     compileOnly("dev.jorel:commandapi-bukkit-core:9.5.0")
+    compileOnly("io.th0rgal:oraxen:1.184.1")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     implementation("com.github.stefvanschie.inventoryframework:IF:0.10.17")
 }
 
@@ -36,7 +40,7 @@ extra.apply {
             if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
         }
     })
-    set("packageName", project.name.replace("-", ""))
+    set("packageName", project.name.replace("-", "").lowercase())
     set("kotlinVersion", libs.versions.kotlin)
     set("paperVersion", libs.versions.paper.get().split('.').take(2).joinToString("."))
 
